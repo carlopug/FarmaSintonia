@@ -66,6 +66,17 @@ qualche informazione già in mano.
   un'affermazione generata e basta, è verificabile risalendo alla fonte.
   Il modello linguistico interviene solo per riformulare in linguaggio
   comprensibile ciò che è già stato trovato nei documenti ufficiali.
+- **RCP (Riassunto delle Caratteristiche del Prodotto), non il foglietto
+  illustrativo (FI).** AIFA pubblica entrambi, ma solo l'RCP ha una
+  struttura a sezioni numerate standard (4.3 controindicazioni, 4.4
+  avvertenze, 4.5 interazioni, 4.8 effetti indesiderati, 6.2
+  incompatibilità), identica farmaco per farmaco: è ciò che rende possibile
+  il sezionamento automatico e il confronto tra farmaci diversi. Il FI, più
+  semplice da leggere, generalizza spesso le interazioni invece di
+  elencare le sostanze specifiche — usarlo rischierebbe di far perdere
+  interazioni reali. Il linguaggio più tecnico dell'RCP è comunque reso
+  comprensibile dalla sintesi LLM descritta sopra, senza sacrificare la
+  completezza clinica.
 - **Interfaccia basata su [Bootstrap Italia](https://italia.github.io/bootstrap-italia/)**
   (Design System Italia), scelto per l'accessibilità WCAG AA già integrata
   — rilevante per un pubblico che comprende spesso persone over 40 — e
