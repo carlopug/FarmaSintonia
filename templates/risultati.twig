@@ -1,0 +1,80 @@
+{% extends 'layout.twig' %}
+
+{% block title %}Risultati — FarmaSintonia{% endblock %}
+
+{% block content %}
+<a href="{{ base_path }}/terapia" class="fs-backlink">← Modifica elenco</a>
+<p class="fs-step">Passo 2 di 2 — Risultati</p>
+
+<div class="alert alert-danger fs-disclaimer" role="alert">
+  <strong>Avvertenza medica.</strong> Analisi informativa automatizzata
+  basata esclusivamente sui documenti AIFA presenti nel file sorgente. Non
+  costituisce diagnosi o prescrizione, non dimostra che una combinazione
+  sia sicura e non deve essere usata per iniziare, sospendere o modificare
+  una terapia senza consulto del medico o del farmacista.
+</div>
+
+<div id="risultati-vuoto" class="alert alert-warning" hidden>
+  Nessuna terapia da analizzare. Torna alla pagina precedente e componi
+  l'elenco dei farmaci.
+  <a href="{{ base_path }}/terapia" class="alert-link">Vai a Composizione terapia</a>.
+</div>
+
+<div id="risultati-loading" class="fs-loading">
+  <p>Analisi in corso — recupero del "Riassunto delle Caratteristiche di Prodotto" da fonti AIFA…</p>
+</div>
+
+<div id="risultati-errore" class="alert alert-danger" hidden></div>
+
+<div id="risultati-contenuto" hidden>
+  <div id="risultati-avvisi"></div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6"><div class="fs-stat-tile"><span class="fs-stat-n" id="stat-farmaci">–</span><span class="fs-stat-l">farmaci analizzati</span></div></div>
+    <div class="col-6"><div class="fs-stat-tile"><span class="fs-stat-n" id="stat-interazioni">–</span><span class="fs-stat-l">interazioni potenziali</span></div></div>
+  </div>
+
+  <div class="alert alert-info fs-callout mb-4">
+    <strong>Come leggere il rapporto.</strong> Le segnalazioni indicano
+    corrispondenze nei documenti ufficiali AIFA: vanno valutate da un medico
+    o da un farmacista, non sono un giudizio di sicurezza.
+  </div>
+
+  <section class="mb-4">
+    <h2 class="h5">Farmaci analizzati</h2>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr><th>Nome commerciale</th><th>AIC6</th><th>Principio/i attivo/i</th></tr></thead>
+        <tbody id="tabella-farmaci"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mb-4">
+    <h2 class="h5">Interazioni e incompatibilità potenziali</h2>
+    <p class="text-muted small" id="interazioni-nota"></p>
+    <div id="interazioni-container" class="d-flex flex-column gap-3"></div>
+  </section>
+
+  <section class="mb-4">
+    <h2 class="h5">Effetti collaterali per farmaco</h2>
+    <p class="text-muted small">
+      Elenco per singolo farmaco, testo integrale dal documento  "Riassunto delle Caratteristiche di Prodotto". L'aggregazione
+      degli effetti comuni a più farmaci, quando disponibile, compare nella sintesi qui sotto.
+    </p>
+    <div id="effetti-container" class="accordion"></div>
+  </section>
+
+  <section class="mb-4" id="sintesi-llm-container"></section>
+
+  <div class="d-flex justify-content-end">
+    <button type="button" id="btn-scarica-pdf" class="btn btn-outline-primary btn-lg">
+      Scarica il report in PDF
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ base_path }}/assets/js/risultati.js" defer></script>
+{% endblock %}

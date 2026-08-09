@@ -1,0 +1,48 @@
+# Materiale privato / studi di fattibilità preliminari (mai da pubblicare:
+# contengono l'analisi di un'API privata AIFA non documentata, vedi
+# CLAUDE.md §9)
+/app/
+
+# Materiale riservato di terzi, non nostro da ripubblicare
+/materiale-riservato-terzi/
+
+# Guida di sviluppo interna e materiale di lavoro: non sono documentazione
+# del codice, restano sul disco (servono per lavorarci) ma vanno escluse
+# da git.
+/CLAUDE.md
+/PITCH.md
+/TO_DO.md
+/VPS_SETUP.md
+
+# Contenuto temporaneamente tolto da README.md, da reintegrare più avanti.
+/README-INTEGRARE.MD
+
+# Bozze di lavoro (wireframe, mockup) usate solo per confronto interno,
+# non fanno parte dell'app né della documentazione pubblica.
+/wireframe-preview.html
+
+# Bozze superate e sorgente di editing del logo (restano pubblici solo gli
+# export finali: logo completo.png, logo solo icona.png/.svg)
+/logo/bozze/
+/logo/logo progetto.af
+
+# Configurazione locale di Claude Code (percorsi/permessi della macchina di
+# sviluppo, mai pubblica)
+/.claude/
+
+# Segreti
+.env
+.env.*
+!.env.example
+
+# Dipendenze (rigenerabili da composer.json / requirements.txt)
+/vendor/
+/deploy/.venv/
+
+# Cache/junk
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

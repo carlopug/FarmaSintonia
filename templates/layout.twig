@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FarmaSintonia — Compatibilità e principi attivi in sintonia{% endblock %}</title>
+  <meta name="description" content="Verifica la compatibilità tra i farmaci che assumi e scopri gli effetti collaterali che hanno in comune, sulla base dei documenti ufficiali AIFA.">
+  <link rel="icon" type="image/svg+xml" href="{{ base_path }}/assets/img/logo-icona.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-italia@2.18.3/dist/css/bootstrap-italia.min.css">
+  <link rel="stylesheet" href="{{ base_path }}/assets/css/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<header class="fs-header">
+  <div class="container fs-header-inner">
+    <a href="{{ base_path }}/" class="fs-logo">
+      <img src="{{ base_path }}/assets/img/logo-icona.svg" alt="" width="34" height="34">
+      <span class="fs-wordmark"><span class="fs-word-farma">Farma</span><span class="fs-word-sintonia">Sintonia</span></span>
+    </a>
+  </div>
+</header>
+
+<main class="container fs-main flex-grow-1 py-4">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="fs-footer">
+  <div class="container fs-footer-inner">
+    <span>&copy; FarmaSintonia — Licenza MIT</span>
+    <a href="{{ base_path }}/credits">Licenze, fonti dati e crediti</a>
+  </div>
+</footer>
+
+<script>window.FS_BASE_PATH = {{ base_path|json_encode|raw }};</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-italia@2.18.3/dist/js/bootstrap-italia.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+<section class="row align-items-center g-4 py-3 py-lg-5">
+  <div class="col-lg-6">
+    <h1 class="fs-hero-title">FarmaSintonia</h1>
+    <p class="fs-payoff">Compatibilità e principi attivi in sintonia.</p>
+    <p class="fs-lead">
+      Se assumi più farmaci, FarmaSintonia ti aiuta a
+      capire se sono compatibili tra loro. Partendo dai principi attivi,
+      così come indicato nei documenti ufficiali AIFA*, determina se esistono
+      incompatibilità dichiarate e mostra gli effetti collaterali che hanno in comune.
+    </p>
+    <a href="{{ base_path }}/terapia" class="btn btn-primary btn-lg">Inizia: indica la tua terapia</a>
+  </div>
+  <div class="col-lg-6">
+    <img src="{{ base_path }}/assets/img/utenti_demo.png" alt="Persone che gestiscono più farmaci contemporaneamente" class="img-fluid rounded fs-hero-img">
+  </div>
+</section>
+
+<section class="row g-3 py-3">
+  <div class="col-md-6">
+    <div class="alert alert-info fs-callout" role="note">
+      <strong>Privacy garantita</strong>: FarmaSintonia non memorizza alcun dato personale, l'elenco dei farmaci che assumi
+      resta nel tuo computer!
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="alert alert-warning fs-callout" role="note">
+      <strong>Avvertenza medica:</strong> FarmaSintonia realizza un'analisi informativa basata sui
+      documenti ufficiali AIFA e non sostituisce il parere di un medico o di un farmacista.
+    </div>
+  </div>
+</section>
+
+  <section class="row g-3 py-3">
+    <div class="col-md-12">
+      <div class="alert alert-info fs-callout" role="note">
+        <strong>*Documenti ufficiali AIFA</strong>: FarmaSintonia accede alle informazioni relative al <strong>Riassunto
+          delle Caratteristiche del Prodotto</strong> che AIFA rende disponibili al pubblico. Per ulteriori informazioni
+          consultare la <a href="https://www.aifa.gov.it/riassunto-caratteristiche-e-foglio-illustrativo" target="_blank">pagina dedicata</a>
+          sul sito di AIFA.
+      </div>
+    </div>
+  </section>
+{% endblock %}

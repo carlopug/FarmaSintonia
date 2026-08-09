@@ -1,0 +1,47 @@
+{% extends 'layout.twig' %}
+
+{% block title %}Licenze e crediti — FarmaSintonia{% endblock %}
+
+{% block content %}
+<a href="{{ base_path }}/" class="fs-backlink">← Home</a>
+<h1 class="fs-page-title">Licenze, fonti e crediti</h1>
+
+<section class="mb-4">
+  <h2 class="h5">Librerie di terze parti</h2>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Libreria</th><th>Uso</th><th>Licenza</th></tr></thead>
+      <tbody>
+        <tr><td>Slim Framework</td><td>Routing dell'applicazione</td><td>MIT</td></tr>
+        <tr><td>slim/psr7</td><td>Implementazione PSR-7</td><td>MIT</td></tr>
+        <tr><td>Twig</td><td>Motore di template</td><td>BSD-3-Clause</td></tr>
+        <tr><td>vlucas/phpdotenv</td><td>Configurazione da .env</td><td>BSD-3-Clause</td></tr>
+        <tr><td>Guzzle</td><td>Client HTTP</td><td>MIT</td></tr>
+        <tr><td>smalot/pdfparser</td><td>Estrazione testo dai PDF RCP/FI</td><td>LGPL-3.0</td></tr>
+        <tr><td>mpdf/mpdf</td><td>Generazione del report PDF</td><td>GPL-2.0-only</td></tr>
+        <tr><td>Bootstrap Italia</td><td>Componenti UI/CSS</td><td>BSD-3-Clause</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="text-muted small">Elenco completo, con le note di dettaglio, nel file <code>NOTICE.md</code> del repository.</p>
+</section>
+
+<section class="mb-4">
+  <h2 class="h5">Fonti dati</h2>
+  <ul>
+    <li>Liste dei farmaci — Open Data pubblici AIFA</li>
+    <li>API pubblica <code>api.aifa.gov.it</code> per i documenti RCP/FI (nessuna autenticazione richiesta)</li>
+  </ul>
+</section>
+
+<section class="mb-4">
+  <h2 class="h5">Progetto</h2>
+  <p>
+    Sviluppato con <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>.
+  </p>
+  <p>
+    Sorgenti disponibili su <a href="https://github.com/carlopug/FarmaSintonia" target="_blank" rel="noopener">GitHub</a>.
+  </p>
+  <p><span class="badge bg-primary">Licenza MIT</span></p>
+</section>
+{% endblock %}

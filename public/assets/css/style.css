@@ -1,0 +1,166 @@
+/*
+ * FarmaSintonia — reskin di brand sopra Bootstrap Italia.
+ * Sovrascrive solo le custom property di Bootstrap 5 (colori, font):
+ * nessuna ricompilazione Sass necessaria.
+ */
+
+:root {
+  --bs-primary: #1A365D;
+  --bs-primary-rgb: 26, 54, 93;
+  --bs-secondary: #0D9488;
+  --bs-secondary-rgb: 13, 148, 136;
+  --bs-link-color: #0D9488;
+  --bs-link-hover-color: #1A365D;
+  --bs-font-sans-serif: "Lato", Geneva, Tahoma, sans-serif;
+  --bs-body-color: #374151;
+}
+
+body {
+  font-family: var(--bs-font-sans-serif);
+}
+
+/* Header */
+.fs-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.85rem 0;
+}
+.fs-header-inner {
+  display: flex;
+  align-items: center;
+}
+.fs-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+.fs-wordmark {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.fs-word-farma {
+  color: #1A365D;
+  font-weight: 700;
+}
+.fs-word-sintonia {
+  color: #0D9488;
+  font-weight: 400;
+}
+
+/* Footer */
+.fs-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 0;
+  margin-top: auto;
+  font-size: 0.85rem;
+  color: #374151;
+}
+.fs-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Home */
+.fs-hero-title {
+  color: #1A365D;
+  font-weight: 700;
+}
+.fs-payoff {
+  font-style: italic;
+  color: #0D9488;
+  font-size: 1.1rem;
+}
+.fs-lead {
+  color: #374151;
+}
+.fs-hero-img {
+  width: 100%;
+  height: auto;
+}
+.fs-callout {
+  height: 100%;
+}
+
+/* Titoli di pagina e step */
+.fs-page-title {
+  color: #1A365D;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+.fs-step {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0D9488;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.fs-backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d7dde3;
+  background: #ffffff;
+  color: #1A365D;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.fs-backlink:hover,
+.fs-backlink:focus-visible {
+  background: #E8F5F2;
+  border-color: #0D9488;
+  color: #0D9488;
+  text-decoration: none;
+}
+
+/* Composizione terapia */
+.fs-suggerimenti {
+  margin-top: 0.25rem;
+}
+.fs-elenco-vuoto {
+  font-style: italic;
+  color: #6b7280;
+}
+
+/* Risultati */
+.fs-disclaimer {
+  font-size: 0.95rem;
+}
+.fs-stat-tile {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  height: 100%;
+}
+.fs-stat-n {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1A365D;
+  font-variant-numeric: tabular-nums;
+}
+.fs-stat-l {
+  font-size: 0.8rem;
+  color: #374151;
+}
+.fs-pair-card {
+  border-color: #e5e7eb;
+}
+.fs-evidence {
+  border-left: 3px solid #0D9488;
+  padding-left: 0.9rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  color: #374151;
+}

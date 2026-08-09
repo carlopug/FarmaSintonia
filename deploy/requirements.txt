@@ -1,0 +1,3 @@
+requests>=2.31
+PyMySQL>=1.1
+truststore>=0.8

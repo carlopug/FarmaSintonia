@@ -1,0 +1,38 @@
+{% extends 'layout.twig' %}
+
+{% block title %}Componi la tua terapia — FarmaSintonia{% endblock %}
+
+{% block content %}
+<p class="fs-step">Passo 1 di 2 — Comporre la terapia</p>
+<h1 class="fs-page-title">La tua terapia</h1>
+
+<div class="fs-search mb-4">
+  <label for="farmaco-search" class="form-label fw-semibold">
+    Cerca un farmaco attraverso il nome commerciale o il principio attivo
+  </label>
+  <input type="search" id="farmaco-search" class="form-control form-control-lg"
+         placeholder="Es. tachipirina, paracetamolo…" autocomplete="off">
+  <ul id="farmaco-suggerimenti" class="list-group fs-suggerimenti" hidden></ul>
+</div>
+
+<div class="fs-elenco mb-4">
+  <h2 class="h5 d-flex align-items-center gap-2">
+    La tua terapia <span id="elenco-count" class="badge bg-secondary">0</span>
+  </h2>
+  <ul id="elenco-terapia" class="list-group">
+    <li class="list-group-item fs-elenco-vuoto">
+      Nessun farmaco aggiunto: cerca un farmaco qui sopra per iniziare.
+    </li>
+  </ul>
+</div>
+
+<div class="d-flex justify-content-end">
+  <button type="button" id="btn-analizza" class="btn btn-primary btn-lg" disabled>
+    Analizza la terapia
+  </button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ base_path }}/assets/js/terapia.js" defer></script>
+{% endblock %}
