@@ -5,6 +5,7 @@ declare(strict_types=1);
 use FarmaSintonia\Services\Compatibilita;
 use FarmaSintonia\Services\Db;
 use FarmaSintonia\Services\FarmacoRicerca;
+use FarmaSintonia\Services\FusioneAnalisi;
 use FarmaSintonia\Services\LlmAnalysisException;
 use FarmaSintonia\Services\LlmCache;
 use FarmaSintonia\Services\LlmSintesi;
@@ -96,9 +97,23 @@ function farmasintonia_costruisci_rapporto(PDO $db, array $codiciAic, bool $vuol
     $logger = new UsoLogger($db);
 
     if (!$vuoleLlm) {
-        $rapporto['analisi_llm']['motivo'] = 'sintesi LLM disattivata per questa richiesta ("llm": false)';
+        $rapporto['analisi_llm'] = [
+            'richiesta' => false,
+            'eseguita' => false,
+            'modello' => $modello,
+            'risultato' => null,
+            'motivo' => 'sintesi LLM disattivata per questa richiesta ("llm": false)',
+            'errore' => null,
+        ];
     } elseif ($apiKey === '') {
-        $rapporto['analisi_llm']['motivo'] = 'OPENAI_API_KEY non configurata: analisi limitata al riscontro deterministico';
+        $rapporto['analisi_llm'] = [
+            'richiesta' => true,
+            'eseguita' => false,
+            'modello' => $modello,
+            'risultato' => null,
+            'motivo' => 'OPENAI_API_KEY non configurata: analisi limitata al riscontro deterministico',
+            'errore' => null,
+        ];
     } else {
         // Cache dei risultati LLM (LlmCache/llm_sintesi_cache): la chiave
         // dipende dal testo RCP effettivamente inviato al modello, non solo
@@ -159,6 +174,12 @@ function farmasintonia_costruisci_rapporto(PDO $db, array $codiciAic, bool $vuol
     }
 
     $logger->registraAnalisi($farmaci, !empty($rapporto['analisi_llm']['eseguita']), !empty($rapporto['analisi_llm']['dalla_cache']));
+
+    $rapporto['analisi_unificata'] = (new FusioneAnalisi())->fondi(
+        $farmaci,
+        $rapporto['analisi_deterministica']['interazioni'],
+        $rapporto['analisi_llm']
+    );
 
     return $rapporto;
 }

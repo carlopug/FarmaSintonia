@@ -49,59 +49,106 @@
     }).join('');
   }
 
-  function badgeClassificazione(classificazione) {
-    var etichette = {
-      interazione_o_cautela: ['Da valutare con attenzione', 'bg-danger'],
-      menzione_da_valutare: ['Da valutare', 'bg-secondary'],
-      assenza_interazione_dichiarata: ['Assenza dichiarata nel testo', 'bg-success'],
+  function livelloRischioBadge(livello) {
+    var mappa = {
+      controindicata: 'bg-danger',
+      maggiore: 'bg-danger',
+      moderata: 'bg-warning text-dark',
+      da_valutare: 'bg-warning text-dark',
+      minore: 'bg-secondary',
+      non_determinabile: 'bg-secondary',
     };
-    var coppia = etichette[classificazione] || ['Da valutare', 'bg-secondary'];
+    var etichette = {
+      controindicata: 'Controindicata',
+      maggiore: 'Rischio maggiore',
+      moderata: 'Rischio moderato',
+      da_valutare: 'Da valutare',
+      minore: 'Rischio minore',
+      non_determinabile: 'Non determinabile',
+    };
+    var chiave = livello || 'non_determinabile';
+    return '<span class="badge ' + (mappa[chiave] || 'bg-secondary') + '">'
+      + escapeHtml(etichette[chiave] || 'Non determinabile') + '</span>';
+  }
+
+  function badgeOrigine(origine) {
+    var mappa = {
+      llm_e_riscontro_automatico: ['Evidenza verificata nei documenti AIFA', 'bg-success'],
+      solo_llm: ['Valutazione del modello', 'bg-secondary'],
+      solo_riscontro_automatico: ['Riscontro automatico, non ancora valutato dal modello', 'bg-warning text-dark'],
+    };
+    var coppia = mappa[origine] || mappa.solo_llm;
     return '<span class="badge ' + coppia[1] + '">' + coppia[0] + '</span>';
   }
 
-  function renderInterazioni(interazioni) {
-    document.getElementById('interazioni-nota').textContent = interazioni.nota || '';
-
-    var potenziali = interazioni.potenziali_interazioni_esplicite || [];
-    var container = document.getElementById('interazioni-container');
-
-    if (potenziali.length === 0) {
-      container.innerHTML = '<p class="text-muted">Nessuna menzione incrociata trovata tra i farmaci di questo elenco '
-        + 'nei testi RCP disponibili. Questo non dimostra che la combinazione sia sicura: parlane comunque con il medico o il farmacista.</p>';
-    } else {
-      container.innerHTML = potenziali.map(function (coppia) {
-        var evidenze = (coppia.evidenze || []).map(function (e) {
-          return '<blockquote class="fs-evidence">'
-            + '"' + escapeHtml(e.estratto) + '"'
-            + '<footer class="blockquote-footer">Fonte: RCP ' + escapeHtml(e.farmaco_fonte)
-            + (e.numero_sezione ? ', sez. ' + escapeHtml(e.numero_sezione) : '')
-            + (e.titolo ? ' ' + escapeHtml(e.titolo) : '') + '</footer>'
-            + '</blockquote>';
-        }).join('');
-
-        var peggiore = coppia.evidenze.some(function (e) { return e.classificazione_testuale === 'interazione_o_cautela'; })
-          ? 'interazione_o_cautela'
-          : 'menzione_da_valutare';
-
-        return '<div class="card fs-pair-card"><div class="card-body">'
-          + '<div class="d-flex justify-content-between align-items-start gap-2">'
-          + '<h3 class="h6 mb-2">' + escapeHtml(coppia.farmaci.join(' × ')) + ' — ' + escapeHtml(coppia.principi_attivi.join(', ')) + '</h3>'
-          + badgeClassificazione(peggiore)
-          + '</div>' + evidenze + '</div></div>';
-      }).join('');
-    }
-
-    var neutre = interazioni.menzioni_di_assenza_interazione || [];
-    if (neutre.length > 0) {
-      container.innerHTML += '<div class="mt-2"><p class="text-muted small mb-1">'
-        + 'Coppie con menzione esplicita di assenza di interazione nel testo:</p><ul class="small text-muted">'
-        + neutre.map(function (c) { return '<li>' + escapeHtml(c.farmaci.join(' e ')) + '</li>'; }).join('')
-        + '</ul></div>';
-    }
+  function renderEvidenze(evidenze) {
+    return (evidenze || []).map(function (e) {
+      var fonte = e.farmaco_fonte
+        ? '<footer class="blockquote-footer">Fonte: RCP ' + escapeHtml(e.farmaco_fonte)
+          + (e.numero_sezione ? ', sez. ' + escapeHtml(e.numero_sezione) : '')
+          + (e.titolo ? ' ' + escapeHtml(e.titolo) : '') + '</footer>'
+        : '';
+      return '<blockquote class="fs-evidence">"' + escapeHtml(e.estratto) + '"' + fonte + '</blockquote>';
+    }).join('');
   }
 
-  function renderEffettiCollaterali(effetti) {
-    var perFarmaco = effetti.per_farmaco || [];
+  function renderInterazioniUnificate(analisiUnificata, notaDeterministica) {
+    var elQuadro = document.getElementById('quadro-generale');
+    elQuadro.innerHTML = analisiUnificata.riepilogo_terapia
+      ? '<p>' + escapeHtml(analisiUnificata.riepilogo_terapia) + '</p>'
+      : '';
+
+    var elNota = document.getElementById('nota-sintesi-non-disponibile');
+    if (!analisiUnificata.sintesi_disponibile) {
+      elNota.innerHTML = '<div class="alert alert-info fs-callout small mb-3">'
+        + 'Sintesi IA non disponibile in questo momento — qui sotto il riscontro sui documenti ufficiali AIFA. '
+        + escapeHtml(analisiUnificata.motivo_sintesi_non_disponibile || 'si è verificato un problema imprevisto')
+        + ' <button type="button" id="btn-riprova-llm" class="btn btn-link btn-sm p-0 align-baseline">Riprova più tardi</button>'
+        + '</div>';
+    } else {
+      elNota.innerHTML = '';
+    }
+
+    document.getElementById('interazioni-nota').textContent = notaDeterministica || '';
+
+    var interazioni = analisiUnificata.interazioni || [];
+    var container = document.getElementById('interazioni-container');
+    if (interazioni.length === 0) {
+      container.innerHTML = '<p class="text-muted">Nessuna interazione rilevata tra i farmaci di questo elenco '
+        + 'nei testi RCP disponibili. Questo non dimostra che la combinazione sia sicura: parlane comunque con il medico o il farmacista.</p>';
+      return;
+    }
+
+    container.innerHTML = interazioni.map(function (item) {
+      return '<div class="card fs-pair-card"><div class="card-body">'
+        + '<div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">'
+        + '<h3 class="h6 mb-2">' + escapeHtml((item.farmaci_coinvolti || []).join(' × ')) + '</h3>'
+        + '<div class="d-flex gap-1 flex-wrap">' + badgeOrigine(item.origine) + livelloRischioBadge(item.livello_rischio) + '</div>'
+        + '</div>'
+        + (item.sintesi ? '<p>' + escapeHtml(item.sintesi) + '</p>' : '')
+        + (item.conseguenze_potenziali && item.conseguenze_potenziali.length
+          ? '<p class="small mb-1"><strong>Conseguenze potenziali:</strong> ' + escapeHtml(item.conseguenze_potenziali.join('; ')) + '</p>' : '')
+        + renderEvidenze(item.evidenze)
+        + (item.azione_prudenziale ? '<p class="small mb-0"><strong>Azione prudenziale:</strong> ' + escapeHtml(item.azione_prudenziale) + '</p>' : '')
+        + '</div></div>';
+    }).join('');
+  }
+
+  function renderEffettiUnificati(analisiUnificata, effettiPerFarmaco) {
+    var gruppi = analisiUnificata.effetti_collaterali_aggregati || [];
+    var elAggregati = document.getElementById('effetti-aggregati-container');
+    elAggregati.innerHTML = gruppi.length === 0
+      ? '<p class="text-muted small mb-0">Aggregazione per categoria non disponibile in questo momento; qui sotto il testo integrale per farmaco.</p>'
+      : gruppi.map(function (g) {
+        return '<div><p class="mb-1"><strong>' + escapeHtml(g.categoria) + '</strong></p><ul class="mb-1">'
+          + (g.effetti || []).map(function (e) {
+            return '<li>' + escapeHtml(e.effetto) + ' <span class="text-muted small">(' + escapeHtml((e.farmaci_associati || []).join(', ')) + ')</span></li>';
+          }).join('') + '</ul>'
+          + (g.possibile_sovrapposizione ? '<p class="small text-muted mb-0">' + escapeHtml(g.possibile_sovrapposizione) + '</p>' : '')
+          + '</div>';
+      }).join('');
+
+    var perFarmaco = effettiPerFarmaco || [];
     document.getElementById('effetti-container').innerHTML = perFarmaco.map(function (farmaco, indice) {
       var sezioni = farmaco.sezioni_effetti_collaterali || [];
       var corpo = sezioni.length === 0
@@ -120,86 +167,27 @@
     }).join('');
   }
 
-  function livelloRischioBadge(livello) {
-    var mappa = {
-      controindicata: 'bg-danger',
-      maggiore: 'bg-danger',
-      moderata: 'bg-warning text-dark',
-      minore: 'bg-secondary',
-      non_determinabile: 'bg-secondary',
-    };
-    return '<span class="badge ' + (mappa[livello] || 'bg-secondary') + '">' + escapeHtml(livello || 'non_determinabile') + '</span>';
-  }
+  function renderSintesiExtra(analisiUnificata) {
+    var container = document.getElementById('sintesi-extra-container');
+    var html = '';
 
-  function renderSintesiLlm(analisiLlm) {
-    var container = document.getElementById('sintesi-llm-container');
-
-    // Se la sintesi LLM non è stata eseguita, va segnalato (mai un errore
-    // silenzioso): qui l'utente ha anche un pulsante per ritentare.
-    if (!analisiLlm.eseguita) {
-      container.innerHTML = '<h2 class="h5">Sintesi assistita da un modello linguistico</h2>'
-        + '<div class="alert alert-warning">'
-        + '<strong>Sintesi temporaneamente non disponibile.</strong> '
-        + escapeHtml(analisiLlm.motivo || 'si è verificato un problema imprevisto') + '. '
-        + 'Il resoconto qui sopra, con le evidenze testuali citate, resta comunque valido.'
-        + '</div>'
-        + '<button type="button" id="btn-riprova-llm" class="btn btn-outline-secondary btn-sm">Riprova più tardi</button>';
-      return;
-    }
-
-    var r = analisiLlm.risultato;
-    var html = '<h2 class="h5">Sintesi assistita da un modello linguistico</h2>';
-
-    html += '<div class="mb-3"><h3 class="h6">Quadro generale</h3><p>' + escapeHtml(r.riepilogo_terapia) + '</p></div>';
-
-    if ((r.interazioni || []).length > 0) {
-      html += '<div class="mb-3"><h3 class="h6">Interazioni valutate dal modello</h3>'
-        + r.interazioni.map(function (i) {
-          return '<div class="card fs-pair-card mb-2"><div class="card-body">'
-            + '<div class="d-flex justify-content-between align-items-start gap-2">'
-            + '<h4 class="h6 mb-1">' + escapeHtml((i.farmaci_coinvolti || []).join(' × ')) + '</h4>'
-            + livelloRischioBadge(i.livello_rischio)
-            + '</div>'
-            + '<p class="small text-muted mb-1">Tipo: ' + escapeHtml(i.tipo) + '</p>'
-            + '<p>' + escapeHtml(i.sintesi) + '</p>'
-            + (i.conseguenze_potenziali && i.conseguenze_potenziali.length
-              ? '<p class="small mb-1"><strong>Conseguenze potenziali:</strong> ' + escapeHtml(i.conseguenze_potenziali.join('; ')) + '</p>' : '')
-            + (i.evidenze_testuali && i.evidenze_testuali.length
-              ? i.evidenze_testuali.map(function (e) { return '<blockquote class="fs-evidence">"' + escapeHtml(e) + '"</blockquote>'; }).join('') : '')
-            + '<p class="small mb-0"><strong>Azione prudenziale:</strong> ' + escapeHtml(i.azione_prudenziale) + '</p>'
-            + '</div></div>';
-        }).join('') + '</div>';
-    }
-
-    if ((r.effetti_collaterali_aggregati || []).length > 0) {
-      html += '<div class="mb-3"><h3 class="h6">Effetti indesiderati aggregati</h3>'
-        + r.effetti_collaterali_aggregati.map(function (g) {
-          return '<div class="mb-2"><p class="mb-1"><strong>' + escapeHtml(g.categoria) + '</strong></p><ul class="mb-1">'
-            + (g.effetti || []).map(function (e) {
-              return '<li>' + escapeHtml(e.effetto) + ' <span class="text-muted small">(' + escapeHtml((e.farmaci_associati || []).join(', ')) + ')</span></li>';
-            }).join('') + '</ul>'
-            + (g.possibile_sovrapposizione ? '<p class="small text-muted mb-0">' + escapeHtml(g.possibile_sovrapposizione) + '</p>' : '')
-            + '</div>';
-        }).join('') + '</div>';
-    }
-
-    if ((r.rischi_cumulativi || []).length > 0) {
+    if ((analisiUnificata.rischi_cumulativi || []).length > 0) {
       html += '<div class="alert alert-warning"><strong>Rischi cumulativi descritti.</strong><ul class="mb-0">'
-        + r.rischi_cumulativi.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join('') + '</ul></div>';
+        + analisiUnificata.rischi_cumulativi.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join('') + '</ul></div>';
     }
 
-    if ((r.segnali_di_allarme_da_riferire_subito || []).length > 0) {
+    if ((analisiUnificata.segnali_di_allarme || []).length > 0) {
       html += '<div class="alert alert-danger"><strong>Segnali di allarme da riferire subito.</strong><ul class="mb-0">'
-        + r.segnali_di_allarme_da_riferire_subito.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join('') + '</ul></div>';
+        + analisiUnificata.segnali_di_allarme.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join('') + '</ul></div>';
     }
 
-    if ((r.domande_per_medico_o_farmacista || []).length > 0) {
-      html += '<div class="mb-2"><h3 class="h6">Domande per il medico o il farmacista</h3><ul>'
-        + r.domande_per_medico_o_farmacista.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join('') + '</ul></div>';
+    if ((analisiUnificata.domande_per_medico || []).length > 0) {
+      html += '<div class="mb-2"><h2 class="h5">Domande per il medico o il farmacista</h2><ul>'
+        + analisiUnificata.domande_per_medico.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join('') + '</ul></div>';
     }
 
-    if ((r.limitazioni || []).length > 0) {
-      html += '<p class="small text-muted">' + escapeHtml(r.limitazioni.join(' ')) + '</p>';
+    if ((analisiUnificata.limitazioni || []).length > 0) {
+      html += '<p class="small text-muted">' + escapeHtml(analisiUnificata.limitazioni.join(' ')) + '</p>';
     }
 
     container.innerHTML = html;
@@ -212,14 +200,15 @@
     ultimoRapporto = rapporto;
     renderAvvisi(rapporto.avvisi);
 
+    var analisiUnificata = rapporto.analisi_unificata || {};
+
     document.getElementById('stat-farmaci').textContent = rapporto.numero_farmaci;
-    document.getElementById('stat-interazioni').textContent =
-      (rapporto.analisi_deterministica.interazioni.potenziali_interazioni_esplicite || []).length;
+    document.getElementById('stat-interazioni').textContent = (analisiUnificata.interazioni || []).length;
 
     renderFarmaciTabella(rapporto.farmaci_analizzati);
-    renderInterazioni(rapporto.analisi_deterministica.interazioni);
-    renderEffettiCollaterali(rapporto.analisi_deterministica.effetti_collaterali);
-    renderSintesiLlm(rapporto.analisi_llm);
+    renderInterazioniUnificate(analisiUnificata, (rapporto.analisi_deterministica.interazioni || {}).nota);
+    renderEffettiUnificati(analisiUnificata, (rapporto.analisi_deterministica.effetti_collaterali || {}).per_farmaco);
+    renderSintesiExtra(analisiUnificata);
 
     elLoading.hidden = true;
     elContenuto.hidden = false;
@@ -280,7 +269,7 @@
 
   // Delegato sul contenitore: il pulsante "Riprova più tardi" viene
   // ricreato ogni volta che la sezione si ri-renderizza.
-  document.getElementById('sintesi-llm-container').addEventListener('click', function (event) {
+  document.getElementById('nota-sintesi-non-disponibile').addEventListener('click', function (event) {
     if (event.target.id !== 'btn-riprova-llm') {
       return;
     }
@@ -291,10 +280,9 @@
     eseguiAnalisi(leggiElenco())
       .then(renderRisultati)
       .catch(function (errore) {
-        renderSintesiLlm({
-          eseguita: false,
-          motivo: typeof errore === 'string' ? errore : 'errore imprevisto durante il nuovo tentativo',
-        });
+        document.getElementById('nota-sintesi-non-disponibile').innerHTML =
+          '<div class="alert alert-info fs-callout small mb-3">Nuovo tentativo non riuscito: '
+          + escapeHtml(typeof errore === 'string' ? errore : 'errore imprevisto') + '</div>';
       });
   });
 

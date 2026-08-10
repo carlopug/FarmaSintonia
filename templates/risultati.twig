@@ -51,21 +51,24 @@
   </section>
 
   <section class="mb-4">
-    <h2 class="h5">Interazioni e incompatibilità potenziali</h2>
+    <h2 class="h5">Interazioni e valutazione</h2>
+    <div id="quadro-generale" class="mb-2"></div>
+    <div id="nota-sintesi-non-disponibile"></div>
     <p class="text-muted small" id="interazioni-nota"></p>
     <div id="interazioni-container" class="d-flex flex-column gap-3"></div>
   </section>
 
   <section class="mb-4">
-    <h2 class="h5">Effetti collaterali per farmaco</h2>
+    <h2 class="h5">Effetti collaterali</h2>
+    <div id="effetti-aggregati-container" class="d-flex flex-column gap-2 mb-3"></div>
     <p class="text-muted small">
-      Elenco per singolo farmaco, testo integrale dal documento  "Riassunto delle Caratteristiche di Prodotto". L'aggregazione
-      degli effetti comuni a più farmaci, quando disponibile, compare nella sintesi qui sotto.
+      Testo integrale per farmaco, dal documento "Riassunto delle Caratteristiche di Prodotto" —
+      utile per un approfondimento clinico oltre alla sintesi qui sopra.
     </p>
     <div id="effetti-container" class="accordion"></div>
   </section>
 
-  <section class="mb-4" id="sintesi-llm-container"></section>
+  <section class="mb-4" id="sintesi-extra-container"></section>
 
   <div class="d-flex justify-content-end">
     <button type="button" id="btn-scarica-pdf" class="btn btn-outline-primary btn-lg">

@@ -107,34 +107,34 @@ final class ReportPdf
 
     private function corpoHtml(array $rapporto): string
     {
-        $interazioni = $rapporto['analisi_deterministica']['interazioni'] ?? [];
-        $llm = $rapporto['analisi_llm'] ?? [];
+        $interazioniDeterministiche = $rapporto['analisi_deterministica']['interazioni'] ?? [];
+        $effettiPerFarmaco = $rapporto['analisi_deterministica']['effetti_collaterali']['per_farmaco'] ?? [];
+        $unificata = $rapporto['analisi_unificata'] ?? [];
 
         $html = '<div class="fs-title">Analisi di compatibilità farmacologica</div>';
         $html .= '<div class="fs-subtitle">Interazioni potenziali, principi attivi ed effetti indesiderati ricavati '
-            . 'dai riassunti delle caratteristiche del prodotto (RCP) ufficiali AIFA.</div>';
+            . 'dai riassunti delle caratteristiche del prodotto (RCP) ufficiali AIFA, con sintesi assistita da un '
+            . 'modello linguistico.</div>';
 
         $html .= $this->tabellaRiepilogo($rapporto);
         $html .= $this->callout(
             'Come leggere il rapporto',
-            'Le segnalazioni indicano corrispondenze nei documenti RCP e devono essere valutate da un '
-            . 'professionista. La sintesi organizza interazioni, possibili conseguenze, rischi cumulativi '
-            . 'ed effetti indesiderati aggregati.',
+            'Il quadro sottostante è redatto da un modello linguistico a partire esclusivamente dai documenti RCP '
+            . "ufficiali; ogni interazione indica se è ancorata a un'evidenza verificata algoritmicamente nei "
+            . 'documenti o se è una valutazione del modello. Va comunque valutato da un professionista.',
             'info'
         );
 
         $html .= '<h1>Farmaci analizzati</h1>';
         $html .= $this->tabellaFarmaci($rapporto['farmaci_analizzati'] ?? []);
 
-        $html .= '<div class="fs-pagebreak"></div><h1>Interazioni e incompatibilità potenziali</h1>';
+        $html .= '<div class="fs-pagebreak"></div><h1>Interazioni e valutazione</h1>';
         $html .= $this->callout(
             'Interpretazione prudente',
-            (string) ($interazioni['nota'] ?? "L'assenza di una segnalazione non dimostra compatibilità."),
+            (string) ($interazioniDeterministiche['nota'] ?? "L'assenza di una segnalazione non dimostra compatibilità."),
             'warning'
         );
-        $html .= $this->sezioneInterazioni($interazioni);
-
-        $html .= $this->sezioneLlm($llm);
+        $html .= $this->sezioneInterazioniUnificata($unificata, $effettiPerFarmaco);
 
         return $html;
     }
@@ -142,9 +142,9 @@ final class ReportPdf
     private function tabellaRiepilogo(array $rapporto): string
     {
         $numeroFarmaci = (int) ($rapporto['numero_farmaci'] ?? 0);
-        $numeroInterazioni = count($rapporto['analisi_deterministica']['interazioni']['potenziali_interazioni_esplicite'] ?? []);
+        $numeroInterazioni = count($rapporto['analisi_unificata']['interazioni'] ?? []);
 
-        return '<table class="fs-table fs-summary"><tr><th>Farmaci</th><th>Interazioni testuali</th></tr>'
+        return '<table class="fs-table fs-summary"><tr><th>Farmaci</th><th>Interazioni</th></tr>'
             . '<tr><td>' . $numeroFarmaci . '</td><td>' . $numeroInterazioni . '</td></tr>'
             . '</table>';
     }
@@ -162,87 +162,58 @@ final class ReportPdf
             . $righe . '</table>';
     }
 
-    private function sezioneInterazioni(array $interazioni): string
+    private function sezioneInterazioniUnificata(array $unificata, array $effettiPerFarmaco): string
     {
         $html = '';
-        $potenziali = $interazioni['potenziali_interazioni_esplicite'] ?? [];
-        if ($potenziali === []) {
-            $html .= '<p>Nessuna menzione incrociata diretta rilevata.</p>';
-        } else {
-            foreach ($potenziali as $indice => $coppia) {
-                $titolo = implode(' + ', $coppia['farmaci'] ?? []);
-                $html .= '<h2>' . ($indice + 1) . '. ' . $this->escape($titolo) . '</h2>';
-                $html .= '<p><strong>Principi attivi:</strong> ' . $this->escape(implode(', ', $coppia['principi_attivi'] ?? [])) . '</p>';
-                $html .= $this->callout('Stato', 'Potenziale interazione documentale da sottoporre a medico o farmacista.', 'danger');
-                foreach ($coppia['evidenze'] ?? [] as $indiceEvidenza => $evidenza) {
-                    $html .= '<h3>Evidenza ' . ($indiceEvidenza + 1) . '</h3>';
-                    $html .= '<div class="fs-evidence">' . nl2br($this->escape((string) ($evidenza['estratto'] ?? ''))) . '</div>';
-                }
-            }
+
+        if (!empty($unificata['riepilogo_terapia'])) {
+            $html .= '<h2>Quadro generale</h2><p>' . nl2br($this->escape((string) $unificata['riepilogo_terapia'])) . '</p>';
         }
 
-        $neutre = $interazioni['menzioni_di_assenza_interazione'] ?? [];
-        if ($neutre !== []) {
-            $html .= '<h2>Menzioni di assenza di interazione</h2>';
-            foreach ($neutre as $coppia) {
-                $html .= '<h3>' . $this->escape(implode(' + ', $coppia['farmaci'] ?? [])) . '</h3>';
-            }
-        }
-
-        return $html;
-    }
-
-    private function sezioneLlm(array $llm): string
-    {
-        // Se la sintesi LLM non è stata eseguita, il fallimento va segnalato
-        // (mai un errore silenzioso), con l'invito a rigenerare il report
-        // più tardi: un PDF non può offrire un pulsante "riprova".
-        $html = '<div class="fs-pagebreak"></div><h1>Sintesi assistita da modello linguistico</h1>';
-
-        if (empty($llm['eseguita'])) {
-            $motivo = trim((string) ($llm['motivo'] ?? '')) ?: 'si è verificato un problema imprevisto';
-
-            return $html . $this->callout(
-                'Sintesi temporaneamente non disponibile',
-                $motivo . '. Il resoconto sopra riportato, con le evidenze testuali citate, resta comunque '
-                . 'valido. Genera nuovamente il report più tardi per includere la sintesi.',
-                'warning'
-            );
-        }
-
-        $r = $llm['risultato'] ?? [];
-
-        if (!empty($r['riepilogo_terapia'])) {
-            $html .= '<h2>Quadro generale</h2><p>' . nl2br($this->escape((string) $r['riepilogo_terapia'])) . '</p>';
-        }
-
-        $html .= '<h2>Interazioni valutate dal modello</h2>';
-        $interazioniLlm = $r['interazioni'] ?? [];
-        if ($interazioniLlm === []) {
-            $html .= '<p>Nessuna interazione strutturata restituita.</p>';
-        }
-        foreach ($interazioniLlm as $item) {
-            $titolo = implode(' / ', $item['farmaci_coinvolti'] ?? []) ?: 'Interazione';
-            $html .= '<h3>' . $this->escape($titolo) . '</h3>';
-            $html .= '<p>' . nl2br($this->escape((string) ($item['sintesi'] ?? ''))) . '</p>';
+        if (empty($unificata['sintesi_disponibile'])) {
+            $motivo = trim((string) ($unificata['motivo_sintesi_non_disponibile'] ?? '')) ?: 'si è verificato un problema imprevisto';
             $html .= $this->callout(
-                'Classificazione',
-                'Tipo: ' . (string) ($item['tipo'] ?? 'non determinabile')
-                . ' — Livello: ' . (string) ($item['livello_rischio'] ?? 'non determinabile'),
-                'warning'
+                'Sintesi assistita da IA non disponibile in questo momento',
+                $motivo . '. Il riscontro sui documenti ufficiali AIFA qui sotto resta comunque valido.',
+                'info'
             );
+        }
+
+        $html .= '<h2>Interazioni</h2>';
+        $interazioni = $unificata['interazioni'] ?? [];
+        if ($interazioni === []) {
+            $html .= '<p>Nessuna interazione rilevata tra i farmaci di questo elenco.</p>';
+        }
+        foreach ($interazioni as $indice => $item) {
+            $titolo = implode(' + ', $item['farmaci_coinvolti'] ?? []) ?: 'Interazione';
+            $html .= '<h3>' . ($indice + 1) . '. ' . $this->escape($titolo) . '</h3>';
+            $html .= '<p>' . $this->badgeOrigine((string) ($item['origine'] ?? '')) . ' '
+                . $this->badgeRischio((string) ($item['livello_rischio'] ?? 'non_determinabile')) . '</p>';
+            if ((string) ($item['sintesi'] ?? '') !== '') {
+                $html .= '<p>' . nl2br($this->escape((string) $item['sintesi'])) . '</p>';
+            }
             $html .= $this->elencoPuntato($item['conseguenze_potenziali'] ?? []);
-            $evidenze = $item['evidenze_testuali'] ?? [];
-            if ($evidenze !== []) {
-                $html .= '<h3>Evidenze testuali</h3>' . $this->elencoPuntato($evidenze);
+            foreach ($item['evidenze'] ?? [] as $evidenza) {
+                $fonte = $evidenza['farmaco_fonte'] ?? null;
+                $html .= '<div class="fs-evidence">' . nl2br($this->escape((string) ($evidenza['estratto'] ?? '')));
+                if ($fonte !== null) {
+                    $html .= '<br><span style="color:' . self::GRAY_MUTED . ';font-size:7.5pt;">Fonte: RCP ' . $this->escape((string) $fonte)
+                        . (!empty($evidenza['numero_sezione']) ? ', sez. ' . $this->escape((string) $evidenza['numero_sezione']) : '')
+                        . (!empty($evidenza['titolo']) ? ' ' . $this->escape((string) $evidenza['titolo']) : '') . '</span>';
+                }
+                $html .= '</div>';
             }
             if (!empty($item['azione_prudenziale'])) {
                 $html .= $this->callout('Indicazione prudenziale', (string) $item['azione_prudenziale'], 'info');
             }
         }
 
-        $html .= '<h2>Effetti indesiderati aggregati</h2>';
-        foreach ($r['effetti_collaterali_aggregati'] ?? [] as $gruppo) {
+        $html .= '<h2>Effetti collaterali</h2>';
+        $gruppi = $unificata['effetti_collaterali_aggregati'] ?? [];
+        if ($gruppi === []) {
+            $html .= '<p>Aggregazione per categoria non disponibile in questo momento; di seguito il testo integrale per farmaco.</p>';
+        }
+        foreach ($gruppi as $gruppo) {
             $html .= '<h3>' . $this->escape((string) ($gruppo['categoria'] ?? 'Categoria')) . '</h3><ul class="fs-list">';
             foreach ($gruppo['effetti'] ?? [] as $effetto) {
                 $farmaciAssociati = $effetto['farmaci_associati'] ?? [];
@@ -259,18 +230,64 @@ final class ReportPdf
             }
         }
 
-        if (!empty($r['rischi_cumulativi'])) {
-            $html .= '<h2>Rischi cumulativi descritti</h2>' . $this->calloutElenco('', $r['rischi_cumulativi'], 'warning');
+        $html .= '<h3>Testo integrale per farmaco (sezione 4.8 RCP)</h3>';
+        foreach ($effettiPerFarmaco as $farmaco) {
+            $html .= '<p><strong>' . $this->escape((string) ($farmaco['denominazione_farmaco'] ?? '')) . '</strong></p>';
+            $sezioni = $farmaco['sezioni_effetti_collaterali'] ?? [];
+            if ($sezioni === []) {
+                $html .= '<p style="color:' . self::GRAY_MUTED . ';">Nessuna sezione effetti collaterali trovata nel RCP di questo farmaco.</p>';
+                continue;
+            }
+            foreach ($sezioni as $sezione) {
+                $html .= '<p>' . nl2br($this->escape((string) ($sezione['testo'] ?? ''))) . '</p>';
+            }
         }
-        if (!empty($r['segnali_di_allarme_da_riferire_subito'])) {
+
+        if (!empty($unificata['rischi_cumulativi'])) {
+            $html .= '<h2>Rischi cumulativi descritti</h2>' . $this->calloutElenco('', $unificata['rischi_cumulativi'], 'warning');
+        }
+        if (!empty($unificata['segnali_di_allarme'])) {
             $html .= '<h2>Segnali di allarme da riferire subito</h2>'
-                . $this->calloutElenco('', $r['segnali_di_allarme_da_riferire_subito'], 'danger');
+                . $this->calloutElenco('', $unificata['segnali_di_allarme'], 'danger');
         }
-        if (!empty($r['domande_per_medico_o_farmacista'])) {
-            $html .= '<h2>Domande per medico o farmacista</h2>' . $this->elencoPuntato($r['domande_per_medico_o_farmacista']);
+        if (!empty($unificata['domande_per_medico'])) {
+            $html .= '<h2>Domande per medico o farmacista</h2>' . $this->elencoPuntato($unificata['domande_per_medico']);
+        }
+        if (!empty($unificata['limitazioni'])) {
+            $html .= '<p style="color:' . self::GRAY_MUTED . ';font-size:8pt;">'
+                . $this->escape(implode(' ', $unificata['limitazioni'])) . '</p>';
         }
 
         return $html;
+    }
+
+    private function badgeOrigine(string $origine): string
+    {
+        $mappa = [
+            'llm_e_riscontro_automatico' => ['Evidenza verificata nei documenti AIFA', self::PALE_TEAL, self::TEAL],
+            'solo_llm' => ['Valutazione del modello', '#E5E7EB', self::GRAY],
+            'solo_riscontro_automatico' => ['Riscontro automatico, non ancora valutato dal modello', self::PALE_AMBER, self::AMBER_ACCENT],
+        ];
+        [$testo, $sfondo, $colore] = $mappa[$origine] ?? ['Valutazione del modello', '#E5E7EB', self::GRAY];
+
+        return '<span style="background:' . $sfondo . ';color:' . $colore . ';padding:1pt 4pt;border-radius:2pt;font-size:7pt;">'
+            . $this->escape($testo) . '</span>';
+    }
+
+    private function badgeRischio(string $livello): string
+    {
+        $mappa = [
+            'controindicata' => ['Controindicata', self::PALE_RED, self::RED_ACCENT],
+            'maggiore' => ['Rischio maggiore', self::PALE_RED, self::RED_ACCENT],
+            'moderata' => ['Rischio moderato', self::PALE_AMBER, self::AMBER_ACCENT],
+            'da_valutare' => ['Da valutare', self::PALE_AMBER, self::AMBER_ACCENT],
+            'minore' => ['Rischio minore', '#E5E7EB', self::GRAY],
+            'non_determinabile' => ['Non determinabile', '#E5E7EB', self::GRAY],
+        ];
+        [$testo, $sfondo, $colore] = $mappa[$livello] ?? ['Non determinabile', '#E5E7EB', self::GRAY];
+
+        return '<span style="background:' . $sfondo . ';color:' . $colore . ';padding:1pt 4pt;border-radius:2pt;font-size:7pt;">'
+            . $this->escape($testo) . '</span>';
     }
 
     private function elencoPuntato(array $valori): string

@@ -353,7 +353,7 @@ final class Compatibilita
      * in ogni ambiente PHP, mentre iconv/mbstring sono una dipendenza più
      * portabile, già richiesta altrove nel progetto.
      */
-    private static function normalizzaTesto(string $valore): string
+    public static function normalizzaTesto(string $valore): string
     {
         $traslitterato = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $valore);
         $senzaAccenti = $traslitterato !== false ? $traslitterato : $valore;
