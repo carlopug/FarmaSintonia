@@ -82,6 +82,27 @@ qualche informazione già in mano.
   — rilevante per un pubblico che comprende spesso persone over 40 — e
   restylizzato con l'identità grafica del progetto.
 
+## Uso dell'IA
+
+Il modello linguistico non lavora "a memoria": per ogni farmaco in elenco
+riceve il testo effettivamente estratto dalle sezioni RCP pertinenti
+(controindicazioni, avvertenze, interazioni, effetti indesiderati,
+incompatibilità), e viene istruito esplicitamente ad analizzare solo quei
+testi, senza usare conoscenze esterne né inventare interazioni.
+
+Detto questo, è giusto dirlo con chiarezza: si tratta di un'istruzione data
+al modello, non di un vincolo tecnico assoluto — un modello linguistico non
+può essere "disconnesso" dalla propria conoscenza pregressa come si
+scollegherebbe un cavo di rete. Per questo ogni interazione mostrata
+riporta da dove viene: quando corrisponde a un riscontro trovato per
+corrispondenza testuale diretta nei documenti (non una citazione
+autoselezionata dal modello), è etichettata come **evidenza verificata nei
+documenti AIFA**; quando è solo il modello a segnalarla, senza quella
+corrispondenza, è etichettata come **valutazione dell'intelligenza
+artificiale** — comunque basata sui testi RCP che gli sono stati forniti,
+ma senza una verifica indipendente che l'affermazione sia ancorata
+letteralmente al documento.
+
 ## Come si esegue in locale
 
 Richiede PHP 8.3+, Composer, un server MySQL 8 o MariaDB 10.6+, e Python

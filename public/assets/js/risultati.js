@@ -6,9 +6,44 @@
 
   var elVuoto = document.getElementById('risultati-vuoto');
   var elLoading = document.getElementById('risultati-loading');
+  var elLoadingTesto = document.getElementById('risultati-loading-testo');
   var elErrore = document.getElementById('risultati-errore');
   var elContenuto = document.getElementById('risultati-contenuto');
   var elAvvisi = document.getElementById('risultati-avvisi');
+
+  // Nessun segnale di avanzamento reale dal server (è un'unica chiamata
+  // /api/analizza): questi messaggi si alternano solo per far percepire che
+  // l'attesa sta procedendo, non riflettono fasi effettivamente completate.
+  var MESSAGGI_ATTESA = [
+    'Recupero il Riassunto delle Caratteristiche del Prodotto da AIFA…',
+    'Analizzo le sezioni su interazioni e controindicazioni…',
+    'Elaboro i testi con l\'intelligenza artificiale…',
+    'Ragiono sulle interazioni tra i farmaci…',
+    'Aggrego gli effetti collaterali in comune…',
+    'Sto quasi finendo, un attimo ancora…',
+  ];
+  var timerAttesa = null;
+
+  function avviaMessaggiAttesa() {
+    var indice = 0;
+    elLoadingTesto.textContent = MESSAGGI_ATTESA[0];
+    fermaMessaggiAttesa();
+    timerAttesa = setInterval(function () {
+      indice = (indice + 1) % MESSAGGI_ATTESA.length;
+      elLoadingTesto.style.opacity = '0';
+      setTimeout(function () {
+        elLoadingTesto.textContent = MESSAGGI_ATTESA[indice];
+        elLoadingTesto.style.opacity = '1';
+      }, 200);
+    }, 2600);
+  }
+
+  function fermaMessaggiAttesa() {
+    if (timerAttesa) {
+      clearInterval(timerAttesa);
+      timerAttesa = null;
+    }
+  }
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
@@ -27,6 +62,7 @@
   }
 
   function mostraErrore(messaggio) {
+    fermaMessaggiAttesa();
     elLoading.hidden = true;
     elErrore.hidden = false;
     elErrore.textContent = messaggio;
@@ -59,22 +95,22 @@
       non_determinabile: 'bg-secondary',
     };
     var etichette = {
-      controindicata: 'Controindicata',
+      controindicata: 'Combinazione controindicata',
       maggiore: 'Rischio maggiore',
       moderata: 'Rischio moderato',
-      da_valutare: 'Da valutare',
+      da_valutare: 'Rischio da valutare',
       minore: 'Rischio minore',
-      non_determinabile: 'Non determinabile',
+      non_determinabile: 'Rischio non determinabile',
     };
     var chiave = livello || 'non_determinabile';
     return '<span class="badge ' + (mappa[chiave] || 'bg-secondary') + '">'
-      + escapeHtml(etichette[chiave] || 'Non determinabile') + '</span>';
+      + escapeHtml(etichette[chiave] || 'Rischio non determinabile') + '</span>';
   }
 
   function badgeOrigine(origine) {
     var mappa = {
       llm_e_riscontro_automatico: ['Evidenza verificata nei documenti AIFA', 'bg-success'],
-      solo_llm: ['Valutazione del modello', 'bg-secondary'],
+      solo_llm: ["Valutazione dell'intelligenza artificiale", 'bg-secondary'],
       solo_riscontro_automatico: ['Riscontro automatico, non ancora valutato dal modello', 'bg-warning text-dark'],
     };
     var coppia = mappa[origine] || mappa.solo_llm;
@@ -122,7 +158,7 @@
     container.innerHTML = interazioni.map(function (item) {
       return '<div class="card fs-pair-card"><div class="card-body">'
         + '<div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">'
-        + '<h3 class="h6 mb-2">' + escapeHtml((item.farmaci_coinvolti || []).join(' × ')) + '</h3>'
+        + '<h3 class="h6 mb-2">' + escapeHtml((item.farmaci_coinvolti || []).join(' + ')) + '</h3>'
         + '<div class="d-flex gap-1 flex-wrap">' + badgeOrigine(item.origine) + livelloRischioBadge(item.livello_rischio) + '</div>'
         + '</div>'
         + (item.sintesi ? '<p>' + escapeHtml(item.sintesi) + '</p>' : '')
@@ -210,6 +246,7 @@
     renderEffettiUnificati(analisiUnificata, (rapporto.analisi_deterministica.effetti_collaterali || {}).per_farmaco);
     renderSintesiExtra(analisiUnificata);
 
+    fermaMessaggiAttesa();
     elLoading.hidden = true;
     elContenuto.hidden = false;
   }
@@ -293,6 +330,7 @@
     return;
   }
 
+  avviaMessaggiAttesa();
   eseguiAnalisi(elenco)
     .then(renderRisultati)
     .catch(function (errore) {

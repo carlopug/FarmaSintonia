@@ -265,10 +265,10 @@ final class ReportPdf
     {
         $mappa = [
             'llm_e_riscontro_automatico' => ['Evidenza verificata nei documenti AIFA', self::PALE_TEAL, self::TEAL],
-            'solo_llm' => ['Valutazione del modello', '#E5E7EB', self::GRAY],
+            'solo_llm' => ["Valutazione dell'intelligenza artificiale", '#E5E7EB', self::GRAY],
             'solo_riscontro_automatico' => ['Riscontro automatico, non ancora valutato dal modello', self::PALE_AMBER, self::AMBER_ACCENT],
         ];
-        [$testo, $sfondo, $colore] = $mappa[$origine] ?? ['Valutazione del modello', '#E5E7EB', self::GRAY];
+        [$testo, $sfondo, $colore] = $mappa[$origine] ?? ["Valutazione dell'intelligenza artificiale", '#E5E7EB', self::GRAY];
 
         return '<span style="background:' . $sfondo . ';color:' . $colore . ';padding:1pt 4pt;border-radius:2pt;font-size:7pt;">'
             . $this->escape($testo) . '</span>';
@@ -277,14 +277,14 @@ final class ReportPdf
     private function badgeRischio(string $livello): string
     {
         $mappa = [
-            'controindicata' => ['Controindicata', self::PALE_RED, self::RED_ACCENT],
+            'controindicata' => ['Combinazione controindicata', self::PALE_RED, self::RED_ACCENT],
             'maggiore' => ['Rischio maggiore', self::PALE_RED, self::RED_ACCENT],
             'moderata' => ['Rischio moderato', self::PALE_AMBER, self::AMBER_ACCENT],
-            'da_valutare' => ['Da valutare', self::PALE_AMBER, self::AMBER_ACCENT],
+            'da_valutare' => ['Rischio da valutare', self::PALE_AMBER, self::AMBER_ACCENT],
             'minore' => ['Rischio minore', '#E5E7EB', self::GRAY],
-            'non_determinabile' => ['Non determinabile', '#E5E7EB', self::GRAY],
+            'non_determinabile' => ['Rischio non determinabile', '#E5E7EB', self::GRAY],
         ];
-        [$testo, $sfondo, $colore] = $mappa[$livello] ?? ['Non determinabile', '#E5E7EB', self::GRAY];
+        [$testo, $sfondo, $colore] = $mappa[$livello] ?? ['Rischio non determinabile', '#E5E7EB', self::GRAY];
 
         return '<span style="background:' . $sfondo . ';color:' . $colore . ';padding:1pt 4pt;border-radius:2pt;font-size:7pt;">'
             . $this->escape($testo) . '</span>';

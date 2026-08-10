@@ -8,9 +8,9 @@
 
 <div class="alert alert-danger fs-disclaimer" role="alert">
   <strong>Avvertenza medica.</strong> Analisi informativa automatizzata
-  basata esclusivamente sui documenti AIFA presenti nel file sorgente. Non
+  basata esclusivamente sui documenti AIFA disponibili pubblicamente. Non
   costituisce diagnosi o prescrizione, non dimostra che una combinazione
-  sia sicura e non deve essere usata per iniziare, sospendere o modificare
+  non sia sicura e non deve essere usata per iniziare, sospendere o modificare
   una terapia senza consulto del medico o del farmacista.
 </div>
 
@@ -21,7 +21,8 @@
 </div>
 
 <div id="risultati-loading" class="fs-loading">
-  <p>Analisi in corso — recupero del "Riassunto delle Caratteristiche di Prodotto" da fonti AIFA…</p>
+  <div class="fs-spinner" role="status" aria-hidden="true"></div>
+  <p class="fs-loading-testo" id="risultati-loading-testo" aria-live="polite">Analisi in corso…</p>
 </div>
 
 <div id="risultati-errore" class="alert alert-danger" hidden></div>
