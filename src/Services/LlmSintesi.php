@@ -179,7 +179,12 @@ final class LlmSintesi
         return 'Sei un analizzatore prudente di documenti regolatori farmaceutici. '
             . 'Analizza esclusivamente i testi RCP forniti. Non usare conoscenze '
             . 'esterne e non inventare interazioni. Distingui interazioni esplicite, '
-            . 'rischi indiretti o sovrapposizioni e casi non determinabili. Non '
+            . 'rischi indiretti o sovrapposizioni e casi non determinabili. Se per la '
+            . 'stessa coppia di farmaci più sezioni del RCP (es. avvertenze ed effetti '
+            . 'indesiderati) descrivono lo stesso rischio clinico, unisci tutto in una '
+            . "sola voce di 'interazioni' con tutte le evidenze pertinenti; crea voci "
+            . 'distinte per quella coppia solo quando i rischi descritti sono '
+            . 'clinicamente diversi tra loro. Non '
             . 'consigliare di iniziare, sospendere o cambiare dosaggi. Se la gravità '
             . 'non è dichiarata nel testo usa non_determinabile. Raggruppa gli effetti '
             . 'collaterali senza omettere eventi gravi, rari o a frequenza non nota. '

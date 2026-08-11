@@ -186,9 +186,14 @@ final class ReportPdf
         }
         foreach ($interazioni as $indice => $item) {
             $titolo = implode(' + ', $item['farmaci_coinvolti'] ?? []) ?: 'Interazione';
-            $html .= '<h3>' . ($indice + 1) . '. ' . $this->escape($titolo) . '</h3>';
+            $argomento = trim((string) (($item['conseguenze_potenziali'] ?? [])[0] ?? ''));
+            $html .= '<h3>' . ($indice + 1) . '. ' . $this->escape($titolo)
+                . ($argomento !== '' ? ' <span style="color:' . self::GRAY_MUTED . ';font-weight:normal;">— ' . $this->escape($argomento) . '</span>' : '')
+                . '</h3>';
             $html .= '<p>' . $this->badgeOrigine((string) ($item['origine'] ?? '')) . ' '
-                . $this->badgeRischio((string) ($item['livello_rischio'] ?? 'non_determinabile')) . '</p>';
+                . $this->badgeRischio((string) ($item['livello_rischio'] ?? 'non_determinabile')) . ' '
+                . '<span style="color:' . self::GRAY_MUTED . ';font-size:7.5pt;">'
+                . $this->escape($this->etichettaTipo((string) ($item['tipo'] ?? ''))) . '</span></p>';
             if ((string) ($item['sintesi'] ?? '') !== '') {
                 $html .= '<p>' . nl2br($this->escape((string) $item['sintesi'])) . '</p>';
             }
@@ -288,6 +293,18 @@ final class ReportPdf
 
         return '<span style="background:' . $sfondo . ';color:' . $colore . ';padding:1pt 4pt;border-radius:2pt;font-size:7pt;">'
             . $this->escape($testo) . '</span>';
+    }
+
+    private function etichettaTipo(string $tipo): string
+    {
+        $mappa = [
+            'esplicita' => 'Interazione esplicita',
+            'potenziale_indiretta' => 'Rischio indiretto',
+            'duplicazione_o_sovrapposizione' => 'Sovrapposizione di effetti',
+            'non_determinabile' => 'Tipo non determinabile',
+        ];
+
+        return $mappa[$tipo] ?? 'Tipo non determinabile';
     }
 
     private function elencoPuntato(array $valori): string

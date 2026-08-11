@@ -11,6 +11,9 @@
 # da git.
 /CLAUDE.md
 /PITCH.md
+/PITCH.srt
+/PITCH-cue.html
+/SUBMISSION.md
 /TO_DO.md
 /VPS_SETUP.md
 
@@ -38,6 +41,9 @@
 # Dipendenze (rigenerabili da composer.json / requirements.txt)
 /vendor/
 /deploy/.venv/
+
+# Scambio file locale con Claude Code, non fa parte del progetto
+/tmp/
 
 # Cache/junk
 __pycache__/

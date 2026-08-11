@@ -117,6 +117,21 @@
     return '<span class="badge ' + coppia[1] + '">' + coppia[0] + '</span>';
   }
 
+  function etichettaTipo(tipo) {
+    var mappa = {
+      esplicita: 'Interazione esplicita',
+      potenziale_indiretta: 'Rischio indiretto',
+      duplicazione_o_sovrapposizione: 'Sovrapposizione di effetti',
+      non_determinabile: 'Tipo non determinabile',
+    };
+    return mappa[tipo] || mappa.non_determinabile;
+  }
+
+  function argomentoInterazione(item) {
+    var voci = item.conseguenze_potenziali || [];
+    return voci.length ? String(voci[0]).trim() : '';
+  }
+
   function renderEvidenze(evidenze) {
     return (evidenze || []).map(function (e) {
       var fonte = e.farmaco_fonte
@@ -156,10 +171,16 @@
     }
 
     container.innerHTML = interazioni.map(function (item) {
+      var argomento = argomentoInterazione(item);
       return '<div class="card fs-pair-card"><div class="card-body">'
         + '<div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">'
-        + '<h3 class="h6 mb-2">' + escapeHtml((item.farmaci_coinvolti || []).join(' + ')) + '</h3>'
-        + '<div class="d-flex gap-1 flex-wrap">' + badgeOrigine(item.origine) + livelloRischioBadge(item.livello_rischio) + '</div>'
+        + '<h3 class="h6 mb-2">' + escapeHtml((item.farmaci_coinvolti || []).join(' + '))
+          + (argomento ? ' <span class="text-muted fw-normal">— ' + escapeHtml(argomento) + '</span>' : '')
+          + '</h3>'
+        + '<div class="d-flex gap-2 flex-wrap align-items-center">'
+          + badgeOrigine(item.origine) + livelloRischioBadge(item.livello_rischio)
+          + '<span class="text-muted small">' + escapeHtml(etichettaTipo(item.tipo)) + '</span>'
+          + '</div>'
         + '</div>'
         + (item.sintesi ? '<p>' + escapeHtml(item.sintesi) + '</p>' : '')
         + (item.conseguenze_potenziali && item.conseguenze_potenziali.length
