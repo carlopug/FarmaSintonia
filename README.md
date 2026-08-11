@@ -11,6 +11,11 @@ contemporaneamente a capire se sono compatibili tra loro — a partire dai
 principi attivi — così come indicato nei bugiardini ufficiali, e a ottenere
 un riepilogo degli effetti collaterali che più farmaci hanno in comune.
 
+## Video dimostrativo
+
+[youtu.be/SL6v8PUt3aw](https://youtu.be/SL6v8PUt3aw) — meno di 3 minuti,
+soluzione realmente funzionante.
+
 ## Il problema
 
 Chi segue più terapie contemporaneamente lo sa: ogni nuovo specialista
